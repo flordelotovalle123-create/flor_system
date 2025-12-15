@@ -1,6 +1,6 @@
 import { supabase } from '../api/supabase';
 import { comparePassword } from '../utils/bcrypt';
-import { generateToken } from '../utils/jwt';
+import { generarToken } from '../utils/jwt';
 
 interface LoginData {
   email: string;
@@ -28,10 +28,11 @@ export const loginService = async ({ email, password }: LoginData) => {
     throw new Error('credenciales invalidas');
   }
 
-  const token = generateToken({
+  const token = generarToken({
     id: usuario.id,
     rol: usuario.rol
   });
+
 
   return {
     token,
