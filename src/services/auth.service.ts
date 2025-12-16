@@ -9,12 +9,15 @@ interface LoginData {
 
 export const loginService = async ({ email, password }: LoginData) => {
   const { data: usuario, error } = await supabase
-    .from('usuarios')
-    .select('*')
-    .eq('email', email)
-    .eq('activo', true)
-    .single();
+  .from('usuarios')
+  .select('*')
+  .eq('email', email)
+  .eq('activo', true)
+  .single();
 
+  console.log('usuario:', usuario);
+  console.log('error supabase:', error);
+  
   if (error || !usuario) {
     throw new Error('credenciales invalidas');
   }
