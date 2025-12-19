@@ -6,6 +6,7 @@ import {
 } from '../controllers/facturas.controller';
 import { authMiddleware } from '../middlewares/auth.middleware';
 import { roleMiddleware } from '../middlewares/role.middleware';
+
 const router = Router();
 
 router.use(authMiddleware);

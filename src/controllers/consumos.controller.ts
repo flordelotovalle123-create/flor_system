@@ -1,76 +1,47 @@
-import { Request, Response } from 'express';
+import { Request, Response } from 'express'
 import {
   agregarConsumoService,
   listarConsumosPorMesaService,
   eliminarConsumoService,
-  calcularTotalMesaService
-} from '../services/consumos.service';
+  calcularTotalMesaService,
+  actualizarCantidadService
+} from '../services/consumos.service'
 
 export const agregarConsumo = async (req: Request, res: Response) => {
-  try {
-    const { mesa_id, producto_id, cantidad } = req.body;
-
-    if (!mesa_id || !producto_id || !cantidad) {
-      return res.status(400).json({
-        ok: false,
-        message: 'datos incompletos'
-      });
-    }
-
-    await agregarConsumoService({
-      mesa_id,
-      producto_id,
-      cantidad
-    });
-
-    return res.status(201).json({
-      ok: true,
-      message: 'producto agregado a la mesa'
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      ok: false,
-      message: error.message
-    });
-  }
-};
+  await agregarConsumoService(req.body)
+  res.status(201).json({ ok: true })
+}
 
 export const listarConsumosMesa = async (req: Request, res: Response) => {
-  try {
-    const { mesaId } = req.params;
+  const { mesaId } = req.params
 
-    const consumos = await listarConsumosPorMesaService(mesaId);
-    const total = await calcularTotalMesaService(mesaId);
+  const consumos = await listarConsumosPorMesaService(mesaId)
+  const total = await calcularTotalMesaService(mesaId)
 
-    return res.json({
-      ok: true,
-      data: {
-        consumos,
-        total
-      }
-    });
-  } catch (error: any) {
-    return res.status(500).json({
-      ok: false,
-      message: error.message
-    });
-  }
-};
+  res.json({
+    ok: true,
+    data: {
+      consumos,
+      total
+    }
+  })
+}
+
+// En el controlador de consumos, modifica:
+
+export const actualizarCantidad = async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { cantidad, comentario } = req.body  // AÑADE comentario
+
+  await actualizarCantidadService(id, cantidad, comentario)  // PASA EL COMENTARIO
+
+  res.json({ ok: true })
+}
 
 export const eliminarConsumo = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
+  const { id } = req.params
 
-    await eliminarConsumoService(id);
+  await eliminarConsumoService(id)
 
-    return res.json({
-      ok: true,
-      message: 'consumo eliminado'
-    });
-  } catch (error: any) {
-    return res.status(400).json({
-      ok: false,
-      message: error.message
-    });
-  }
-};
+  res.json({ ok: true })
+}

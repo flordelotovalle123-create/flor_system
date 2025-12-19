@@ -71,7 +71,7 @@ export const generarFacturaService = async (
 
   return factura;
 };
-export const listarFacturasService = async () => {
+export const listarFacturasService = async (p0: string | undefined, p1: string | undefined) => {
   const { data, error } = await supabase
     .from('facturas')
     .select(`

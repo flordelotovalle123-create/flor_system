@@ -1,23 +1,24 @@
-import { Router } from 'express';
-import { listarMesas } from '../controllers/mesas.controller';
+import { Router } from 'express'
+import { listarMesas } from '../controllers/mesas.controller'
 import {
   agregarConsumo,
   listarConsumosMesa,
-  eliminarConsumo
-} from '../controllers/consumos.controller';
+  eliminarConsumo,
+  actualizarCantidad
+} from '../controllers/consumos.controller'
+import { authMiddleware } from '../middlewares/auth.middleware'
 
-import { authMiddleware } from '../middlewares/auth.middleware';
+const router = Router()
 
-const router = Router();
-
-router.use(authMiddleware);
+router.use(authMiddleware)
 
 // mesas
-router.get('/', listarMesas);
+router.get('/', listarMesas)
 
 // consumos
-router.post('/consumos', agregarConsumo);
-router.get('/:mesaId/consumos', listarConsumosMesa);
-router.delete('/consumos/:id', eliminarConsumo);
+router.post('/consumos', agregarConsumo)
+router.get('/:mesaId/consumos', listarConsumosMesa)
+router.patch('/consumos/:id', actualizarCantidad) // ✅ ESTA FALTABA
+router.delete('/consumos/:id', eliminarConsumo)
 
-export default router;
+export default router

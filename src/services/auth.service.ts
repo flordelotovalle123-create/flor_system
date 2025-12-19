@@ -13,7 +13,7 @@ export const loginService = async ({ email, password }: LoginData) => {
   .select('*')
   .eq('email', email)
   .eq('activo', true)
-  .single();
+  .maybeSingle();
 
   console.log('usuario:', usuario);
   console.log('error supabase:', error);

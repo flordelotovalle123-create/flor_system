@@ -1,6 +1,10 @@
 import { Response } from 'express';
-import { generarFacturaService } from '../services/facturas.service';
 import { AuthRequest } from '../middlewares/auth.middleware';
+import {
+  generarFacturaService,
+  listarFacturasService,
+  detalleFacturaService
+} from '../services/facturas.service';
 
 /* generar factura */
 export const generarFactura = async (
@@ -15,7 +19,6 @@ export const generarFactura = async (
 
     return res.status(201).json({
       ok: true,
-      message: 'factura generada correctamente',
       data: factura
     });
   } catch (error: any) {
@@ -26,15 +29,22 @@ export const generarFactura = async (
   }
 };
 
-/* listar facturas (admin) */
+/* listar facturas con o sin filtro de fechas */
 export const listarFacturas = async (
   req: AuthRequest,
   res: Response
 ) => {
   try {
+    const { fechaInicio, fechaFin } = req.query;
+
+    const facturas = await listarFacturasService(
+      fechaInicio ? String(fechaInicio) : undefined,
+      fechaFin ? String(fechaFin) : undefined
+    );
+
     return res.json({
       ok: true,
-      data: []
+      data: facturas
     });
   } catch (error: any) {
     return res.status(400).json({
@@ -44,7 +54,7 @@ export const listarFacturas = async (
   }
 };
 
-/* detalle factura */
+/* detalle de una factura */
 export const detalleFactura = async (
   req: AuthRequest,
   res: Response
@@ -52,9 +62,11 @@ export const detalleFactura = async (
   try {
     const { id } = req.params;
 
+    const detalles = await detalleFacturaService(id);
+
     return res.json({
       ok: true,
-      id
+      data: detalles
     });
   } catch (error: any) {
     return res.status(400).json({
