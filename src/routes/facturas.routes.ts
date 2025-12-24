@@ -1,28 +1,34 @@
-import { Router } from 'express';
+import { Router } from 'express'
 import {
   generarFactura,
   listarFacturas,
   detalleFactura
-} from '../controllers/facturas.controller';
-import { authMiddleware } from '../middlewares/auth.middleware';
-import { roleMiddleware } from '../middlewares/role.middleware';
+} from '../controllers/facturas.controller'
+import { authMiddleware } from '../middlewares/auth.middleware'
+import { roleMiddleware } from '../middlewares/role.middleware'
 
-const router = Router();
+const router = Router()
 
-router.use(authMiddleware);
+router.use(authMiddleware)
 
-router.post('/mesa/:mesaId', generarFactura);
+// 🔴 evitar cache
+router.use((req, res, next) => {
+  res.setHeader('cache-control', 'no-store')
+  next()
+})
+
+router.post('/mesa/:mesaId', generarFactura)
 
 router.get(
   '/',
   roleMiddleware(['admin']),
   listarFacturas
-);
+)
 
 router.get(
   '/:id',
   roleMiddleware(['admin']),
   detalleFactura
-);
+)
 
-export default router;
+export default router

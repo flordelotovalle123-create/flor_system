@@ -71,8 +71,12 @@ export const generarFacturaService = async (
 
   return factura;
 };
-export const listarFacturasService = async (p0: string | undefined, p1: string | undefined) => {
-  const { data, error } = await supabase
+
+export const listarFacturasService = async (
+  fechaInicio?: string,
+  fechaFin?: string
+) => {
+  let query = supabase
     .from('facturas')
     .select(`
       id,
@@ -81,11 +85,20 @@ export const listarFacturasService = async (p0: string | undefined, p1: string |
       mesas ( numero ),
       usuarios ( nombre )
     `)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
 
-  if (error) throw new Error(error.message);
-  return data;
-};
+  if (fechaInicio && fechaFin) {
+    query = query
+      .gte('created_at', fechaInicio)
+      .lte('created_at', fechaFin)
+  }
+
+  const { data, error } = await query
+
+  if (error) throw new Error(error.message)
+  return data
+}
+
 
 export const detalleFacturaService = async (facturaId: string) => {
   const { data, error } = await supabase
