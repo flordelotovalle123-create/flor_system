@@ -15,19 +15,19 @@ export const generarFacturaService = async (
       subtotal,
       productos ( id, nombre )
     `)
-    .eq('mesa_id', mesaId);
+    .eq('mesa_id', mesaId)
 
   if (error || !consumos || consumos.length === 0) {
-    throw new Error('la mesa no tiene consumos');
+    throw new Error('la mesa no tiene consumos')
   }
 
   // calcular total
   const total = consumos.reduce(
     (sum, c) => sum + Number(c.subtotal),
     0
-  );
+  )
 
-  // crear factura
+  // crear factura (numero_factura se genera solo)
   const { data: factura, error: facturaError } = await supabase
     .from('facturas')
     .insert([
@@ -37,10 +37,15 @@ export const generarFacturaService = async (
         total
       }
     ])
-    .select()
-    .single();
+    .select(`
+      id,
+      numero_factura,
+      total,
+      created_at
+    `)
+    .single()
 
-  if (facturaError) throw new Error(facturaError.message);
+  if (facturaError) throw new Error(facturaError.message)
 
   // insertar detalle factura
   const detalles = consumos.map((c: any) => ({
@@ -50,27 +55,28 @@ export const generarFacturaService = async (
     cantidad: c.cantidad,
     precio_unitario: c.precio_unitario,
     subtotal: c.subtotal
-  }));
+  }))
 
   const { error: detalleError } = await supabase
     .from('factura_detalles')
-    .insert(detalles);
+    .insert(detalles)
 
-  if (detalleError) throw new Error(detalleError.message);
+  if (detalleError) throw new Error(detalleError.message)
 
   // eliminar consumos
   const { error: deleteError } = await supabase
     .from('mesa_consumos')
     .delete()
-    .eq('mesa_id', mesaId);
+    .eq('mesa_id', mesaId)
 
-  if (deleteError) throw new Error(deleteError.message);
+  if (deleteError) throw new Error(deleteError.message)
 
   // liberar mesa
-  await liberarMesaService(mesaId);
+  await liberarMesaService(mesaId)
 
-  return factura;
-};
+  return factura
+}
+
 
 export const listarFacturasService = async (
   fechaInicio?: string,
@@ -80,6 +86,7 @@ export const listarFacturasService = async (
     .from('facturas')
     .select(`
       id,
+      numero_factura,
       total,
       created_at,
       mesas ( numero ),
@@ -98,6 +105,8 @@ export const listarFacturasService = async (
   if (error) throw new Error(error.message)
   return data
 }
+
+
 
 
 export const detalleFacturaService = async (facturaId: string) => {
