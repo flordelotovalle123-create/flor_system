@@ -2,21 +2,30 @@ import { Request, Response } from 'express'
 import {
   listarMesasService,
   crearMesaService,
-  eliminarMesaService,
-  liberarMesaService
+  liberarMesaService,
+  cerrarMesaTemporalService
 } from '../services/mesas.service'
 import { eliminarConsumosPorMesaService } from '../services/consumos.service'
 import { supabase } from '../api/supabase'
 
+/* =========================
+   listar mesas
+   ========================= */
 export const listarMesas = async (_: Request, res: Response) => {
   try {
     const mesas = await listarMesasService()
     res.json({ ok: true, data: mesas })
   } catch (error: any) {
-    res.status(500).json({ ok: false, message: error.message })
+    res.status(500).json({
+      ok: false,
+      message: error.message
+    })
   }
 }
 
+/* =========================
+   crear mesa
+   ========================= */
 export const crearMesa = async (req: Request, res: Response) => {
   try {
     const { numero, es_temporal } = req.body
@@ -28,22 +37,32 @@ export const crearMesa = async (req: Request, res: Response) => {
       })
     }
 
-    const mesa = await crearMesaService(numero, 'libre', es_temporal || false)
+    const mesa = await crearMesaService(
+      numero,
+      'libre',
+      es_temporal || false
+    )
 
     res.status(201).json({ ok: true, data: mesa })
   } catch (error: any) {
-    res.status(400).json({ ok: false, message: error.message })
+    res.status(400).json({
+      ok: false,
+      message: error.message
+    })
   }
 }
 
+/* =========================
+   pagar mesa (fix fk)
+   ========================= */
 export const pagarMesa = async (req: Request, res: Response) => {
   try {
     const { mesaId } = req.params
 
-    // eliminar consumos
+    // eliminar consumos primero
     await eliminarConsumosPorMesaService(mesaId)
 
-    // consultar tipo de mesa
+    // obtener tipo de mesa
     const { data: mesa, error } = await supabase
       .from('mesas')
       .select('es_temporal')
@@ -53,7 +72,8 @@ export const pagarMesa = async (req: Request, res: Response) => {
     if (error) throw error
 
     if (mesa?.es_temporal) {
-      await eliminarMesaService(mesaId)
+      // 🔴 ya no se elimina
+      await cerrarMesaTemporalService(mesaId)
     } else {
       await liberarMesaService(mesaId)
     }
@@ -70,4 +90,3 @@ export const pagarMesa = async (req: Request, res: Response) => {
     })
   }
 }
-

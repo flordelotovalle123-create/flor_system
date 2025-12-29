@@ -1,5 +1,9 @@
 import { Router } from 'express'
-import { listarMesas, crearMesa, pagarMesa} from '../controllers/mesas.controller'
+import {
+  listarMesas,
+  crearMesa,
+  pagarMesa
+} from '../controllers/mesas.controller'
 import {
   agregarConsumo,
   listarConsumosMesa,
@@ -14,13 +18,13 @@ router.use(authMiddleware)
 
 // mesas
 router.get('/', listarMesas)
+router.post('/', crearMesa)
+router.post('/pagar/:mesaId', pagarMesa)
 
 // consumos
-router.post('/', crearMesa);
 router.post('/consumos', agregarConsumo)
 router.get('/:mesaId/consumos', listarConsumosMesa)
-router.patch('/consumos/:id', actualizarCantidad) // ✅ ESTA FALTABA
+router.patch('/consumos/:id', actualizarCantidad)
 router.delete('/consumos/:id', eliminarConsumo)
-router.post('/pagar/:mesaId', pagarMesa)
 
 export default router
