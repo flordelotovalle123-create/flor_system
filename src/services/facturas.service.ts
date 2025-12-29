@@ -73,6 +73,20 @@ export const generarFacturaService = async (
 
   // liberar mesa
   await liberarMesaService(mesaId)
+  // si la mesa es temporal, la cerramos
+  const { data: mesa } = await supabase
+    .from('mesas')
+    .select('es_temporal')
+    .eq('id', mesaId)
+    .single();
+
+  if (mesa?.es_temporal) {
+    await supabase
+      .from('mesas')
+      .update({ estado: 'cerrada' })
+      .eq('id', mesaId);
+  }
+
 
   return factura
 }

@@ -8,6 +8,8 @@ import mesasRoutes from './routes/mesas.routes';
 import facturasRoutes from './routes/facturas.routes';
 import reportesRoutes from './routes/reportes.routes';
 import facturaPdfRoutes from './routes/factura-pdf.routes';
+import ventasRapidasRoutes from './routes/ventasRapidas.routes'
+
 const app = express();
 
 app.use(cors());
@@ -20,6 +22,7 @@ app.use('/api/mesas', mesasRoutes);
 app.use('/api/facturas', facturasRoutes);
 app.use('/api/reportes', reportesRoutes);
 app.use('/api/facturas', facturaPdfRoutes)
+app.use('/api/ventas-rapidas', ventasRapidasRoutes)
 
 
 export default app;

@@ -149,3 +149,10 @@ export const calcularTotalMesaService = async (mesaId: string) => {
 
   return data.reduce((sum, item) => sum + Number(item.subtotal), 0)
 }
+
+export const eliminarConsumosPorMesaService = async (mesaId: string) => {
+  await supabase
+    .from('mesa_consumos')
+    .delete()
+    .eq('mesa_id', mesaId)
+}
