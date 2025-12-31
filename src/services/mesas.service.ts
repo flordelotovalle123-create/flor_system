@@ -42,29 +42,12 @@ export const liberarMesaService = async (mesaId: string) => {
 
   if (error) throw new Error(error.message)
 
-  // mesas temporales no se liberan
-  if (data?.es_temporal) return
-
   const { error: updateError } = await supabase
     .from('mesas')
     .update({ estado: 'libre' })
     .eq('id', mesaId)
 
   if (updateError) throw new Error(updateError.message)
-}
-
-/* =========================
-   cerrar mesa temporal (nuevo)
-   ========================= */
-export const cerrarMesaTemporalService = async (mesaId: string) => {
-  const { error } = await supabase
-    .from('mesas')
-    .update({
-      estado: 'cerrada'
-    })
-    .eq('id', mesaId)
-
-  if (error) throw new Error(error.message)
 }
 
 /* =========================
@@ -87,6 +70,26 @@ export const crearMesaService = async (
 
   if (error) throw new Error(error.message)
   return data
+}
+/* =========================
+   se consulta en la base de datos si ya hay una mesa temporal libre,
+    en caso de no estarlo, se crea una nueva.
+   ========================= */
+export const buscarMesaTemporalLibreService = async () => {
+  const { data, error } = await supabase
+    .from('mesas')
+    .select('*')
+    .eq('es_temporal', true)
+    .eq('estado', 'libre')
+    .order('numero')
+    .limit(1)
+    .single()
+
+  if (error && error.code !== 'PGRST116') {
+    throw new Error(error.message)
+  }
+
+  return data ?? null
 }
 
 /* =========================

@@ -3,7 +3,6 @@ import {
   listarMesasService,
   crearMesaService,
   liberarMesaService,
-  cerrarMesaTemporalService
 } from '../services/mesas.service'
 import { eliminarConsumosPorMesaService } from '../services/consumos.service'
 import { supabase } from '../api/supabase'
@@ -24,12 +23,33 @@ export const listarMesas = async (_: Request, res: Response) => {
 }
 
 /* =========================
-   crear mesa
+   crear mesa en caso de no encontrar una temporal libre
    ========================= */
 export const crearMesa = async (req: Request, res: Response) => {
   try {
     const { numero, es_temporal } = req.body
 
+    // solo aplica reutilizacion para mesas temporales
+    if (es_temporal) {
+      const { buscarMesaTemporalLibreService } = await import('../services/mesas.service')
+
+      const mesaLibre = await buscarMesaTemporalLibreService()
+
+      if (mesaLibre) {
+        // reactivar mesa temporal existente
+        await supabase
+          .from('mesas')
+          .update({ estado: 'ocupada' })
+          .eq('id', mesaLibre.id)
+
+        return res.status(200).json({
+          ok: true,
+          data: { ...mesaLibre, estado: 'ocupada' }
+        })
+      }
+    }
+
+    // si no hay mesa reutilizable → crear nueva
     if (!numero) {
       return res.status(400).json({
         ok: false,
@@ -39,7 +59,7 @@ export const crearMesa = async (req: Request, res: Response) => {
 
     const mesa = await crearMesaService(
       numero,
-      'libre',
+      'ocupada',
       es_temporal || false
     )
 
@@ -51,6 +71,7 @@ export const crearMesa = async (req: Request, res: Response) => {
     })
   }
 }
+
 
 /* =========================
    pagar mesa (fix fk)
@@ -71,12 +92,9 @@ export const pagarMesa = async (req: Request, res: Response) => {
 
     if (error) throw error
 
-    if (mesa?.es_temporal) {
-      // 🔴 ya no se elimina
-      await cerrarMesaTemporalService(mesaId)
-    } else {
-      await liberarMesaService(mesaId)
-    }
+    // todas las mesas vuelven a libre
+    await liberarMesaService(mesaId)
+
 
     res.json({
       ok: true,
